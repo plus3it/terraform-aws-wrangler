@@ -1,2 +1,3 @@
 # wrangler
-Project to collect and store files as artifacts needed for a build process
+
+Collect files needed for watchmaker and stores them in an S3 bucket
