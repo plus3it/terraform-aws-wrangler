@@ -22,6 +22,14 @@ module "file_cache" {
   uris = "${local.uris}"
 }
 
+module "salt_reposync" {
+  source = "git::https://github.com/plus3it/salt-reposync?ref=1.0.0"
+
+  # Remove trailing slash from salt repo prefix
+  repo_base    = "https://s3.amazonaws.com/${aws_s3_bucket.this.id}/${var.prefix}${replace(var.salt_repo_prefix, "/[/]$/", "")}"
+  salt_version = "${var.salt_version}"
+}
+
 resource "aws_s3_bucket_object" "files" {
   count = "${length(local.uris)}"
 

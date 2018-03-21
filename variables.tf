@@ -20,3 +20,15 @@ variable "prefix" {
   description = "S3 key prefix to prepend to each object"
   default     = ""
 }
+
+variable "salt_repo_prefix" {
+  type        = "string"
+  description = "S3 key prefix for the Salt yum repo"
+  default     = ""
+}
+
+variable "salt_version" {
+  type        = "string"
+  description = "Salt version to retrieve and push to the S3 bucket"
+  default     = ""
+}
