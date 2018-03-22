@@ -30,27 +30,31 @@ module "salt_reposync" {
   salt_version = "${var.salt_version}"
 }
 
-resource "aws_s3_bucket_object" "files" {
+data "null_data_source" "files" {
   count = "${length(local.uris)}"
 
-  bucket = "${aws_s3_bucket.this.id}"
-  key    = "${var.prefix}${element(local.s3_paths, count.index)}${basename(element(module.file_cache.filepaths, count.index))}"
-  source = "${element(module.file_cache.filepaths, count.index)}"
-  etag   = "${md5(file(element(module.file_cache.filepaths, count.index)))}"
+  inputs {
+    filepath = "${element(module.file_cache.filepaths, count.index)}"
+    filename = "${replace(basename(element(module.file_cache.filepaths, count.index)), "%20", " ")}"
+    hash_content = "${sha512(element(module.file_cache.filepaths, count.index))} ${replace(basename(element(module.file_cache.filepaths, count.index)), "%20", " ")}"
+  }
 }
 
-data "template_file" "hashes" {
-  count = "${length(local.uris)}"
+resource "aws_s3_bucket_object" "files" {
+  count = "${length(data.null_data_source.files.*.outputs.filepath)}"
 
-  template = "${sha512(element(module.file_cache.filepaths, count.index))} ${basename(element(module.file_cache.filepaths, count.index))}"
+  bucket = "${aws_s3_bucket.this.id}"
+  key    = "${var.prefix}${element(local.s3_paths, count.index)}${element(data.null_data_source.files.*.outputs.filename, count.index)}"
+  source = "${element(data.null_data_source.files.*.outputs.filepath, count.index)}"
+  etag   = "${md5(file(element(data.null_data_source.files.*.outputs.filepath, count.index)))}"
 }
 
 resource "aws_s3_bucket_object" "hashes" {
-  count = "${length(local.uris)}"
+  count = "${length(data.null_data_source.files.*.outputs.filepath)}"
 
   bucket       = "${aws_s3_bucket.this.id}"
-  key          = "${var.prefix}${element(local.s3_paths, count.index)}${basename(element(module.file_cache.filepaths, count.index))}.SHA512"
-  content      = "${element(data.template_file.hashes.*.rendered, count.index)}"
+  key          = "${var.prefix}${element(local.s3_paths, count.index)}${element(data.null_data_source.files.*.outputs.filename, count.index)}.SHA512"
+  content      = "${element(data.null_data_source.files.*.outputs.hash_content, count.index)}"
   content_type = "application/octet-stream"
-  etag         = "${md5("${element(data.template_file.hashes.*.rendered, count.index)}")}"
+  etag         = "${md5("${element(data.null_data_source.files.*.outputs.hash_content, count.index)}")}"
 }

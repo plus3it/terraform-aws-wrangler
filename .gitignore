@@ -5,6 +5,7 @@
 
 # User state
 .env
+*.tfvars
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
