@@ -1,7 +1,12 @@
-# Terraform compiled files and folders
-*.tfstate
-*.tfstate.backup
+# Terraform compiled files and directories
+terraform.tfstate
+terraform.tfstate.backup
 .terraform/
+terraform.tfstate.d/
+
+# Rendered user files
+main.tf
+outputs.tf
 
 # User state
 .filecache

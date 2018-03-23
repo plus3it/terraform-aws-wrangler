@@ -32,3 +32,9 @@ variable "salt_version" {
   description = "Salt version to retrieve and push to the S3 bucket"
   default     = ""
 }
+
+variable "s3_objects_map" {
+  type        = "map"
+  description = "Map of bucket names to a list of prefixes -- objects in each bucket matching each prefix will be retrieved and copied to \"bucket_name\""
+  default     = {}
+}
