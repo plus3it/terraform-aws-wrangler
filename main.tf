@@ -35,7 +35,7 @@ data "null_data_source" "files" {
 
   inputs {
     filepath = "${module.file_cache.filepaths[count.index]}"
-    filename = "${replace(basename(module.file_cache.filepaths[count.index]), "%20", " ")}"
+    key = "${var.prefix}${local.s3_paths[count.index]}${replace(basename(module.file_cache.filepaths[count.index]), "%20", " ")}"
     hash_content = "${sha512(module.file_cache.filepaths[count.index])} ${replace(basename(module.file_cache.filepaths[count.index]), "%20", " ")}"
   }
 }
@@ -44,7 +44,7 @@ resource "aws_s3_bucket_object" "files" {
   count = "${length(data.null_data_source.files.*.outputs.filepath)}"
 
   bucket = "${aws_s3_bucket.this.id}"
-  key    = "${var.prefix}${local.s3_paths[count.index]}${data.null_data_source.files.*.outputs.filename[count.index]}"
+  key    = "${data.null_data_source.files.*.outputs.key[count.index]}"
   source = "${data.null_data_source.files.*.outputs.filepath[count.index]}"
   etag   = "${md5(file(data.null_data_source.files.*.outputs.filepath[count.index]))}"
 }
@@ -53,7 +53,7 @@ resource "aws_s3_bucket_object" "hashes" {
   count = "${length(data.null_data_source.files.*.outputs.filepath)}"
 
   bucket       = "${aws_s3_bucket.this.id}"
-  key          = "${var.prefix}${local.s3_paths[count.index]}${data.null_data_source.files.*.outputs.filename[count.index]}.SHA512"
+  key          = "${data.null_data_source.files.*.outputs.key[count.index]}.SHA512"
   content      = "${data.null_data_source.files.*.outputs.hash_content[count.index]}"
   content_type = "application/octet-stream"
   etag         = "${md5(data.null_data_source.files.*.outputs.hash_content[count.index])}"
