@@ -17,7 +17,7 @@ resource "aws_s3_bucket" "this" {
 }
 
 module "file_cache" {
-  source = "git::https://github.com/plus3it/terraform-external-file-cache?ref=1.0.2"
+  source = "git::https://github.com/plus3it/terraform-external-file-cache?ref=1.2.0"
 
   uris = "${local.uris}"
 }
@@ -31,12 +31,12 @@ module "salt_reposync" {
 }
 
 data "null_data_source" "files" {
-  count = "${length(local.uris)}"
+  count = "${length(module.file_cache.filepaths)}"
 
   inputs {
-    filepath = "${module.file_cache.filepaths[count.index]}"
-    key = "${var.prefix}${local.s3_paths[count.index]}${replace(basename(module.file_cache.filepaths[count.index]), "%20", " ")}"
-    hash_content = "${sha512(module.file_cache.filepaths[count.index])} ${replace(basename(module.file_cache.filepaths[count.index]), "%20", " ")}"
+    filepath     = "${module.file_cache.filepaths[count.index]}"
+    key          = "${var.prefix}${local.s3_paths[count.index]}${basename(module.file_cache.filepaths[count.index])}"
+    hash_content = "${sha512(file(module.file_cache.filepaths[count.index]))} ${basename(module.file_cache.filepaths[count.index])}"
   }
 }
 
@@ -47,6 +47,12 @@ resource "aws_s3_bucket_object" "files" {
   key    = "${data.null_data_source.files.*.outputs.key[count.index]}"
   source = "${data.null_data_source.files.*.outputs.filepath[count.index]}"
   etag   = "${md5(file(data.null_data_source.files.*.outputs.filepath[count.index]))}"
+
+  lifecycle {
+    ignore_changes = [
+      "source"
+    ]
+  }
 }
 
 resource "aws_s3_bucket_object" "hashes" {

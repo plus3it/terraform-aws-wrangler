@@ -4,6 +4,7 @@
 .terraform/
 
 # User state
+.filecache
 .env
 *.tfvars
 
