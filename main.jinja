@@ -19,6 +19,8 @@ locals {
 }
 
 data "template_file" "bucket_policy" {
+  count = "${var.create_bucket ? 1 : 0}"
+
   template = "${file(var.bucket_policy)}"
 
   vars {
@@ -28,8 +30,20 @@ data "template_file" "bucket_policy" {
 }
 
 resource "aws_s3_bucket" "this" {
+  count = "${var.create_bucket ? 1 : 0}"
+
   bucket = "${var.bucket_name}"
+}
+
+resource "aws_s3_bucket_policy" "this" {
+  count = "${var.create_bucket ? 1 : 0}"
+
+  bucket = "${aws_s3_bucket.this.id}"
   policy = "${data.template_file.bucket_policy.rendered}"
+}
+
+locals {
+  bucket_name = "${var.create_bucket ? join("", aws_s3_bucket.this.*.id) : var.bucket_name}"
 }
 
 module "file_cache" {
@@ -42,7 +56,7 @@ module "salt_reposync" {
   source = "git::https://github.com/plus3it/salt-reposync?ref=1.0.0"
 
   # Remove trailing slash from salt repo prefix
-  repo_base    = "https://s3.amazonaws.com/${aws_s3_bucket.this.id}/${var.prefix}${replace(var.salt_repo_prefix, "/[/]$/", "")}"
+  repo_base    = "https://s3.amazonaws.com/${local.bucket_name}/${var.prefix}${replace(var.salt_repo_prefix, "/[/]$/", "")}"
   salt_version = "${var.salt_version}"
 }
 
@@ -64,7 +78,7 @@ locals {
 
 {% for uri in uri_map.keys() %}
 resource "aws_s3_bucket_object" "file_{{ uri | sha256 }}" {
-  bucket = "${aws_s3_bucket.this.id}"
+  bucket = "${local.bucket_name}"
   key    = "${lookup(local.uri_to_key, "{{ uri }}")}"
   source = "${lookup(local.uri_to_filepath, "{{ uri }}")}"
   etag   = "${md5(file(lookup(local.uri_to_filepath, "{{ uri }}")))}"
@@ -77,7 +91,7 @@ resource "aws_s3_bucket_object" "file_{{ uri | sha256 }}" {
 }
 
 resource "aws_s3_bucket_object" "hash_{{ uri | sha256 }}" {
-  bucket       = "${aws_s3_bucket.this.id}"
+  bucket       = "${local.bucket_name}"
   key          = "${lookup(local.uri_to_key, "{{ uri }}")}.SHA512"
   content      = "${lookup(local.uri_to_hash_content, "{{ uri }}")}"
   content_type = "application/octet-stream"
@@ -87,7 +101,7 @@ resource "aws_s3_bucket_object" "hash_{{ uri | sha256 }}" {
 
 {% for uri in source_s3_uris %}
 resource "aws_s3_bucket_object" "file_{{ uri | sha256 }}" {
-  bucket = "${aws_s3_bucket.this.id}"
+  bucket = "${local.bucket_name}"
   key    = "${lookup(local.uri_to_key, "{{ uri }}")}"
   source = "${lookup(local.uri_to_filepath, "{{ uri }}")}"
   etag   = "${md5(file(lookup(local.uri_to_filepath, "{{ uri }}")))}"

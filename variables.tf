@@ -9,6 +9,12 @@ variable "bucket_policy" {
   default     = "templates/bucket_policy.json"
 }
 
+variable "create_bucket" {
+  type        = "string"
+  description = "Toggle that determines whether to create the bucket -- if false, bucket must already exist"
+  default     = "false"
+}
+
 variable "uri_map" {
   type        = "map"
   description = "Map of URIs to retrieve and the S3 key path at which to store the file"
