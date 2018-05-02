@@ -5,6 +5,6 @@ XARGS_CMD ?= xargs -I {}
 json.lint:
 	$(FIND_JSON) | $(XARGS_CMD) bash -c 'cmp {} <(jq --indent 4 -S . {}) || (echo "[{}]: Failed JSON Lint Test"; exit 1)'
 
-.PHONY: yaml.lint
-yaml.lint:
-	yamllint --strict .
+.PHONY: tf.lint
+tf.lint:
+	terraform fmt -check=true
