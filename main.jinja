@@ -15,7 +15,7 @@ locals {
 
   uri_map  = "${merge(var.uri_map, local.source_s3_uri_map)}"
   uris     = "${keys(local.uri_map)}"
-  s3_paths = "${values(local.uri_map)}"
+  s3_paths = "${concat(values(local.uri_map), list("NULL"))}"
 }
 
 data "template_file" "bucket_policy" {
