@@ -85,7 +85,10 @@ def load_variables(var_objects):
         with open(terrafile) as fh:
             data = hcl.load(fh)
             for key, value in data.get("variable", {}).items():
-                if "default" in value:
+                env_key = '{0}{1}'.format('TF_VAR_', key)
+                if env_key in os.environ:
+                    variables.update({key: os.environ[env_key]})
+                elif "default" in value:
                     variables.update({key: value["default"]})
 
     for var in var_objects:
