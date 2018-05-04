@@ -7,6 +7,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals, with_statement)
 
 import argparse
+import ast
 import glob
 import hashlib
 import itertools
@@ -76,7 +77,7 @@ def s3_list_keys(bucket, prefixes=None):
     ])
 
 
-def load_variables(filenames):
+def load_variables(var_objects):
     """Load terraform variables."""
     variables = {}
 
@@ -87,10 +88,19 @@ def load_variables(filenames):
                 if "default" in value:
                     variables.update({key: value["default"]})
 
-    for varfile in filenames:
-        with open(varfile) as fh:
-            data = hcl.load(fh)
-            variables.update(data)
+    for var in var_objects:
+        data = var
+        if os.path.isfile(path=data):
+            with open(file=var) as fh:
+                data = fh.read()
+        else:
+            try:
+                # Convert to json a string that looks like a python object
+                data = json.dumps(ast.literal_eval(data))
+            except (SyntaxError, ValueError):
+                pass
+
+        variables.update(hcl.loads(data))
 
     return variables
 
@@ -108,7 +118,7 @@ def render(template, context):
 
 def main(args):
     """Process files."""
-    context = load_variables(args.var_files)
+    context = load_variables(args.vars)
     if args.show_vars:
         print(json.dumps(context, indent=4))
 
@@ -126,7 +136,9 @@ def cli():
     """Load args."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-var-file", dest="var_files", action="append", default=[])
+        "-var-file", dest="vars", action="append", default=[])
+    parser.add_argument(
+        "-var", dest="vars", action="append", default=[])
     parser.add_argument("-t", "--test", action="store_true")
     parser.add_argument("-s", "--show-vars", action="store_true")
     parser.add_argument("PATH", nargs="?", default=".")
