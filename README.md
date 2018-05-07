@@ -25,14 +25,14 @@ pip install requirements.txt
 Then render the files:
 
 ```
-python render.py -var-file <var-file1> -var-file <var-file2> ... -var-file <var-fileN>
+python render.py -var-file <var-file1> -var <var1="val1"> ... -var-file <var-fileN>
 ```
 
-Once rendered, run terraform as usual, passing the same var-file(s):
+Once rendered, run terraform as usual, passing the same vars/var-file(s):
 
 ```
 terraform init
-terraform apply -var-file <var-file1> -var-file <var-file2> ... -var-file <var-fileN>
+terraform apply -var-file <var-file1> -var <var1="val1"> ... -var-file <var-fileN>
 ```
 
 We recommend using Terragrunt and [Terragrunt hooks][terragrunt-hooks], in
