@@ -87,8 +87,16 @@ def load_variables(var_objects):
             for key, value in data.get("variable", {}).items():
                 env_key = '{0}{1}'.format('TF_VAR_', key)
                 if env_key in os.environ:
-                    variables.update(hcl.loads('{0} = {1}'.format(
-                        key, os.environ[env_key])))
+                    val = os.environ[env_key]
+                    try:
+                        variables.update(hcl.loads('{0} = {1}'.format(
+                            key, val)))
+                    except ValueError:
+                        # Naively wrap value in double quotes
+                        # TODO: test more variations, extract string handling
+                        #       to dedicated function
+                        variables.update(hcl.loads('{0} = "{1}"'.format(
+                            key, val)))
                 elif "default" in value:
                     variables.update({key: value["default"]})
 
