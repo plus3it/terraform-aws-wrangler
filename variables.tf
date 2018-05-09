@@ -15,6 +15,12 @@ variable "create_bucket" {
   default     = "false"
 }
 
+variable "force_destroy" {
+  type        = "string"
+  description = "A boolean that indicates all objects should be deleted from the bucket so that the bucket can be destroyed without error. These objects are not recoverable."
+  default     = "false"
+}
+
 variable "uri_map" {
   type        = "map"
   description = "Map of URIs to retrieve and the S3 key path at which to store the file"
