@@ -48,13 +48,13 @@ locals {
 }
 
 module "file_cache" {
-  source = "git::https://github.com/plus3it/terraform-external-file-cache?ref=1.2.1"
+  source = "git::https://github.com/plus3it/terraform-external-file-cache.git?ref=1.2.1"
 
   uris = "${local.uris}"
 }
 
 module "salt_reposync" {
-  source = "git::https://github.com/plus3it/salt-reposync?ref=1.0.0"
+  source = "git::https://github.com/plus3it/salt-reposync.git?ref=1.0.0"
 
   # Remove trailing slash from salt repo prefix
   repo_base    = "https://s3.amazonaws.com/${local.bucket_name}/${var.prefix}${replace(var.salt_repo_prefix, "/[/]$/", "")}"
