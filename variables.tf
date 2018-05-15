@@ -39,10 +39,22 @@ variable "salt_repo_prefix" {
   default     = ""
 }
 
+variable "salt_yum_prefix" {
+  type        = "string"
+  description = "S3 key prefix for the Salt yum repo"
+  default     = ""
+}
+
 variable "salt_version" {
   type        = "string"
-  description = "Salt version to retrieve and push to the S3 bucket"
+  description = "Default Salt version to retrieve and push to the S3 bucket"
   default     = ""
+}
+
+variable "extra_salt_versions" {
+  type        = "list"
+  description = "List of additional Salt versions to retrieve and push to the S3 bucket"
+  default     = []
 }
 
 variable "s3_objects_map" {
