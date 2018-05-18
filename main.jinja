@@ -54,11 +54,13 @@ module "file_cache" {
 }
 
 module "salt_reposync" {
-  source = "git::https://github.com/plus3it/salt-reposync.git?ref=1.0.0"
+  source = "git::https://github.com/plus3it/salt-reposync.git?ref=2.0.2"
 
-  # Remove trailing slash from salt repo prefix
-  repo_base    = "https://s3.amazonaws.com/${local.bucket_name}/${var.prefix}${replace(var.salt_repo_prefix, "/[/]$/", "")}"
-  salt_version = "${var.salt_version}"
+  bucket_name         = "${local.bucket_name}"
+  repo_prefix         = "${var.salt_repo_prefix}"
+  yum_prefix          = "${var.salt_yum_prefix}"
+  salt_version        = "${var.salt_version}"
+  extra_salt_versions = "${var.extra_salt_versions}"
 }
 
 data "null_data_source" "files" {
