@@ -10,6 +10,7 @@ import argparse
 import ast
 import glob
 import hashlib
+import io
 import itertools
 import json
 import os
@@ -82,7 +83,7 @@ def load_variables(var_objects):
     variables = {}
 
     for terrafile in glob.glob("./*.tf"):
-        with open(terrafile) as fh:
+        with io.open(file=terrafile) as fh:
             data = hcl.load(fh)
             for key, value in data.get("variable", {}).items():
                 env_key = '{0}{1}'.format('TF_VAR_', key)
@@ -103,7 +104,7 @@ def load_variables(var_objects):
     for var in var_objects:
         data = var
         if os.path.isfile(path=data):
-            with open(file=var) as fh:
+            with io.open(file=var) as fh:
                 data = fh.read()
         else:
             try:
@@ -140,7 +141,7 @@ def main(args):
         if args.test:
             print(rendered_contents)
         else:
-            with open(rendered_filename, "w") as fh:
+            with io.open(file=rendered_filename, mode="w") as fh:
                 fh.write(rendered_contents)
 
 
