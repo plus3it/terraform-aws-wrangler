@@ -33,6 +33,12 @@ variable "prefix" {
   default     = ""
 }
 
+variable "python_cmd" {
+  type        = "list"
+  description = "Command to use when executing python external resources"
+  default     = ["python"]
+}
+
 variable "salt_repo_prefix" {
   type        = "string"
   description = "S3 key prefix for the Salt yum repo"
