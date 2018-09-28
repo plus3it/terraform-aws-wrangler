@@ -55,7 +55,7 @@ module "file_cache" {
 }
 
 module "salt_reposync" {
-  source = "git::https://github.com/plus3it/salt-reposync.git?ref=2.0.2"
+  source = "git::https://github.com/plus3it/salt-reposync.git?ref=2.0.3"
 
   bucket_name         = "${local.bucket_name}"
   repo_prefix         = "${var.salt_repo_prefix}"
