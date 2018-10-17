@@ -25,7 +25,7 @@ data "aws_partition" "current" {}
 data "aws_region" "current" {}
 
 data "template_file" "bucket_policy" {
-  count = "${var.create_bucket ? 1 : 0}"
+  count = "${var.bucket_policy != "" ? 1 : 0}"
 
   template = "${file(var.bucket_policy)}"
 
@@ -46,7 +46,7 @@ resource "aws_s3_bucket" "this" {
 }
 
 resource "aws_s3_bucket_policy" "this" {
-  count = "${var.create_bucket ? 1 : 0}"
+  count = "${var.bucket_policy != "" ? 1 : 0}"
 
   bucket = "${aws_s3_bucket.this.id}"
   policy = "${data.template_file.bucket_policy.rendered}"
