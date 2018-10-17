@@ -18,6 +18,12 @@ locals {
   s3_paths = "${concat(values(local.uri_map), list("NULL"))}"
 }
 
+data "aws_caller_identity" "current" {}
+
+data "aws_partition" "current" {}
+
+data "aws_region" "current" {}
+
 data "template_file" "bucket_policy" {
   count = "${var.create_bucket ? 1 : 0}"
 
@@ -26,6 +32,9 @@ data "template_file" "bucket_policy" {
   vars {
     bucket_name = "${var.bucket_name}"
     prefix      = "${var.prefix}"
+    account_id  = "${data.aws_caller_identity.current.account_id}"
+    partition   = "${data.aws_partition.current.partition}"
+    region      = "${data.aws_region.current.name}"
   }
 }
 
