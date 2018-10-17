@@ -6,7 +6,7 @@ variable "bucket_name" {
 variable "bucket_policy" {
   type        = "string"
   description = "File path to the bucket policy template"
-  default     = "templates/bucket_policy.json"
+  default     = ""
 }
 
 variable "create_bucket" {
