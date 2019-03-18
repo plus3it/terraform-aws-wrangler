@@ -23,6 +23,7 @@ import six
 from jinja2 import Environment, FileSystemLoader
 
 S3 = boto3.client("s3")
+S3_PAGINATOR = S3.get_paginator('list_objects_v2')
 
 
 class JinjaFilter(object):
@@ -67,13 +68,26 @@ def keys_from_bucket_objects(objects):
     return [x["Key"] for x in objects if not x["Key"].endswith("/")]
 
 
+def s3_list_objects(bucket, prefix='/', delimiter='/', start_after=''):
+    """List S3 Keys."""
+    prefix = prefix[1:] if prefix.startswith(delimiter) else prefix
+    start_after = (
+      (start_after or prefix) if prefix.endswith(delimiter) else start_after
+    )
+    for page in S3_PAGINATOR.paginate(
+        Bucket=bucket, Prefix=prefix, StartAfter=start_after
+    ):
+        for content in page.get('Contents', ()):
+            yield content
+
+
 @jinja_filter("s3_list_keys")
 def s3_list_keys(bucket, prefixes=None):
     """List S3 Keys."""
     prefixes = prefixes if prefixes else [""]
     return itertools.chain.from_iterable([
         keys_from_bucket_objects(
-            S3.list_objects(Bucket=bucket, Prefix=prefix).get("Contents", {})
+            s3_list_objects(bucket, prefix=prefix)
         ) for prefix in prefixes
     ])
 
