@@ -16,6 +16,14 @@ locals {
   uri_map  = "${merge(var.uri_map, local.source_s3_uri_map)}"
   uris     = "${keys(local.uri_map)}"
   s3_paths = "${concat(values(local.uri_map), list("NULL"))}"
+
+  bucket_policy_vars = {
+    bucket_name = "${var.bucket_name}"
+    prefix      = "${var.prefix}"
+    account_id  = "${data.aws_caller_identity.current.account_id}"
+    partition   = "${data.aws_partition.current.partition}"
+    region      = "${data.aws_region.current.name}"
+  }
 }
 
 data "aws_caller_identity" "current" {}
@@ -29,13 +37,7 @@ data "template_file" "bucket_policy" {
 
   template = "${file(var.bucket_policy)}"
 
-  vars {
-    bucket_name = "${var.bucket_name}"
-    prefix      = "${var.prefix}"
-    account_id  = "${data.aws_caller_identity.current.account_id}"
-    partition   = "${data.aws_partition.current.partition}"
-    region      = "${data.aws_region.current.name}"
-  }
+  vars = "${merge(local.bucket_policy_vars, var.bucket_policy_vars)}"
 }
 
 resource "aws_s3_bucket" "this" {

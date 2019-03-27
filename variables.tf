@@ -9,6 +9,12 @@ variable "bucket_policy" {
   default     = ""
 }
 
+variable "bucket_policy_vars" {
+  type        = "map"
+  description = "Map of variables to make available to the bucket policy template"
+  default     = {}
+}
+
 variable "create_bucket" {
   type        = "string"
   description = "Toggle that determines whether to create the bucket -- if false, bucket must already exist"
