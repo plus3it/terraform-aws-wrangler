@@ -8,8 +8,8 @@
 {%- for uri in uri_map.keys() -%}
     {%- do file_keys.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".key") %}
     {%- do file_etags.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".etag") %}
-    {%- do hash_keys.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".key") %}
-    {%- do hash_etags.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".etag") %}
+    {%- do hash_keys.append("aws_s3_bucket_object.hash_" ~ uri | sha256 ~ ".key") %}
+    {%- do hash_etags.append("aws_s3_bucket_object.hash_" ~ uri | sha256 ~ ".etag") %}
 {%- endfor -%}
 
 {% for uri in source_s3_uris %}
