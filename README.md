@@ -1,3 +1,5 @@
+[![pullreminders](https://pullreminders.com/badge.svg)](https://pullreminders.com?ref=badge)
+
 # terraform-aws-wrangler
 
 Terraform module to collect files from various sources and manage them in an S3
