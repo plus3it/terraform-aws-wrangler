@@ -48,28 +48,8 @@ particular, to automate these steps.
 This module supports a few use cases, managed by specifying different
 variables.
 
-1.  Creates an S3 bucket and applies a bucket policy.
-2.  Retrieves files from source URIs and stores them in an S3 bucket.
-3.  Creates a Salt yum mirror in an S3 bucket (salt-reposync).
-4.  Copies files from one S3 bucket to another.
-
-### Create an S3 bucket
-
-To create an S3 bucket, use the variables:
-
--   `bucket_name` - Name of the S3 bucket.
--   `bucket_policy` - Filepath to the JSON bucket policy. This file is
-    templated using the Terraform [template provider][template-provider].
-    Variables passed through the templater include:
-    -   `bucket_name`
-    -   `prefix`
--   `create_bucket` - Set to `"true"` to create the bucket.
-
-When using this module for other use cases, if `create_bucket` is `"false"`,
-then the bucket specified by `bucket_name` must already exist. You _can_ also
-combine use cases, creating the bucket in the same terraform configuration.
-
-[template-provider]: https://www.terraform.io/docs/providers/template/d/file.html
+1.  Retrieves files from source URIs and stores them in an S3 bucket.
+2.  Copies files from one S3 bucket to another.
 
 ### Retrieve files and store them in an S3 bucket
 
@@ -95,31 +75,6 @@ These variables are used to retrieve files and store them in an S3 bucket:
 -   `bucket_name` - Name of the S3 bucket where files will be stored.
 -   `prefix` - S3 prefix prepended to all S3 key paths when the files are put
     in the bucket.
-
-### Create yum repo mirror for a specific Salt version
-
-To create a yum mirror for Salt, use these variables:
-
--   `salt_version` - Version of salt to mirror. If empty (the default), then no
-    Salt yum repo mirror will be created.
--   `salt_repo_prefix` - S3 path prepended to all files in the Salt yum repo
-    mirror.
--   `bucket_name` - S3 bucket where the salt yum mirror will be created.
-
-This feature uses the [`salt-reposync`][salt-reposync] module, which launches
-an EC2 instance that mirrors the repo via rsync. The EC2 resources created by
-the `salt-reposync` module will remain behind (incurring charges) unless you
-destroy them. To destroy them, run:
-
--   `terraform destroy -target module.salt_reposync`
-
-It is safe to destroy the module...the mirrored yum repo will remain. It is
-also safe to re-create the mirror by specifying a salt version that has already
-been mirrored to the same bucket/prefix. If you use terragrunt, you _may_ want
-to use its "after" [hook][terragrunt-hooks] to automate the destroy action.
-
-[salt-reposync]: https://github.com/plus3it/salt-reposync
-[terragrunt-hooks]: https://github.com/gruntwork-io/terragrunt#before-and-after-hooks
 
 ### Copy files from one bucket to another
 

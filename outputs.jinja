@@ -17,11 +17,6 @@
     {%- do file_etags.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".etag") %}
 {%- endfor -%}
 
-output "bucket_name" {
-  description = "Name of the S3 Bucket"
-  value       = "${join("", aws_s3_bucket.this.*.id)}"
-}
-
 output "file_keys" {
   description = "List of file keys created in the S3 bucket"
   value       = "${list({{ file_keys | join(", ") }})}"
