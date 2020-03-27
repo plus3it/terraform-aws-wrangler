@@ -8,67 +8,54 @@
 {%- endfor -%}
 
 locals {
-  source_s3_uris  = "${list({{ source_s3_uris | map("regex_replace", ".*", '"\g<0>"') | join(",") }})}"
-  source_s3_paths = "${list({{ source_s3_paths | map("regex_replace", ".*", '"\g<0>/"') | join(",") }})}"
+  source_s3_uris  = [{{ source_s3_uris | map("regex_replace", ".*", '"\g<0>"') | join(",") }}]
+  source_s3_paths = [{{ source_s3_paths | map("regex_replace", ".*", '"\g<0>/"') | join(",") }}]
 
-  source_s3_uri_map = "${zipmap(local.source_s3_uris, local.source_s3_paths)}"
+  source_s3_uri_map = zipmap(local.source_s3_uris, local.source_s3_paths)
 
-  uri_map  = "${merge(var.uri_map, local.source_s3_uri_map)}"
-  uris     = "${keys(local.uri_map)}"
-  s3_paths = "${concat(values(local.uri_map), list("NULL"))}"
+  uri_map  = merge(var.uri_map, local.source_s3_uri_map)
+  uris     = keys(local.uri_map)
+  s3_paths = concat(values(local.uri_map), ["NULL"])
 }
-
-data "aws_caller_identity" "current" {}
-
-data "aws_partition" "current" {}
-
-data "aws_region" "current" {}
 
 module "file_cache" {
-  source = "git::https://github.com/plus3it/terraform-external-file-cache.git?ref=1.3.1"
+  source = "git::https://github.com/plus3it/terraform-external-file-cache.git?ref=2.0.0"
 
-  python_cmd = "${var.python_cmd}"
-  uris       = "${local.uris}"
-}
-
-data "null_data_source" "files" {
-  count = "${length(module.file_cache.filepaths)}"
-
-  inputs {
-    filepath     = "${module.file_cache.filepaths[count.index]}"
-    key          = "${var.prefix}${local.s3_paths[count.index]}${basename(module.file_cache.filepaths[count.index])}"
-    hash_content = "${sha512(file(module.file_cache.filepaths[count.index]))} ${basename(module.file_cache.filepaths[count.index])}"
-  }
+  python_cmd = var.python_cmd
+  uris       = local.uris
 }
 
 locals {
-  uri_to_filepath     = "${zipmap(local.uris, data.null_data_source.files.*.outputs.filepath)}"
-  uri_to_key          = "${zipmap(local.uris, data.null_data_source.files.*.outputs.key)}"
-  uri_to_hash_content = "${zipmap(local.uris, data.null_data_source.files.*.outputs.hash_content)}"
-}
+  uri_to_key = {
+    for uri, filepath in module.file_cache.filepaths : uri => "${var.prefix}${local.uri_map[uri]}${basename(filepath)}"
+  }
 
+  uri_to_hash_content = {
+    for uri, filepath in module.file_cache.filepaths : uri => "${filesha512(filepath)} ${basename(filepath)}"
+  }
+}
 {% for uri in uri_map.keys() %}
 resource "aws_s3_bucket_object" "file_{{ uri | sha256 }}" {
-  bucket = "${var.bucket_name}"
-  key    = "${lookup(local.uri_to_key, "{{ uri }}")}"
-  source = "${lookup(local.uri_to_filepath, "{{ uri }}")}"
-  etag   = "${md5(file(lookup(local.uri_to_filepath, "{{ uri }}")))}"
+  bucket = var.bucket_name
+  key    = lookup(local.uri_to_key, "{{ uri }}")
+  source = lookup(module.file_cache.filepaths, "{{ uri }}")
+  etag   = filemd5(lookup(module.file_cache.filepaths, "{{ uri }}"))
 }
 
 resource "aws_s3_bucket_object" "hash_{{ uri | sha256 }}" {
-  bucket       = "${var.bucket_name}"
+  bucket       = var.bucket_name
   key          = "${lookup(local.uri_to_key, "{{ uri }}")}.SHA512"
-  content      = "${lookup(local.uri_to_hash_content, "{{ uri }}")}"
+  content      = lookup(local.uri_to_hash_content, "{{ uri }}")
   content_type = "application/octet-stream"
-  etag         = "${md5(lookup(local.uri_to_hash_content, "{{ uri }}"))}"
+  etag         = md5(lookup(local.uri_to_hash_content, "{{ uri }}"))
 }
-{% endfor %}
+{% endfor -%}
 
 {% for uri in source_s3_uris %}
 resource "aws_s3_bucket_object" "file_{{ uri | sha256 }}" {
-  bucket = "${var.bucket_name}"
-  key    = "${lookup(local.uri_to_key, "{{ uri }}")}"
-  source = "${lookup(local.uri_to_filepath, "{{ uri }}")}"
-  etag   = "${md5(file(lookup(local.uri_to_filepath, "{{ uri }}")))}"
+  bucket = var.bucket_name
+  key    = lookup(local.uri_to_key, "{{ uri }}")
+  source = lookup(module.file_cache.filepaths, "{{ uri }}")
+  etag   = filemd5(lookup(module.file_cache.filepaths, "{{ uri }}"))
 }
-{% endfor %}
+{% endfor -%}

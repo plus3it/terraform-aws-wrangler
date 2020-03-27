@@ -97,6 +97,10 @@ def load_variables(var_objects):
     variables = {}
 
     for terrafile in glob.glob("./*.tf"):
+        if os.path.isfile('{}.jinja'.format(os.path.splitext(terrafile)[0])):
+            # tf has a .jinja equivalent and so is rendered, skip it because
+            # it will be overwritten anyway
+            continue
         with io.open(file=terrafile) as fh:
             data = hcl.load(fh)
             for key, value in data.get("variable", {}).items():

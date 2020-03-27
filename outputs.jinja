@@ -19,20 +19,20 @@
 
 output "file_keys" {
   description = "List of file keys created in the S3 bucket"
-  value       = "${list({{ file_keys | join(", ") }})}"
+  value       = [{{ file_keys | join(", ") }}]
 }
 
 output "file_etags" {
  description = "List of file ETags generated for each object in the bucket"
- value       = "${list({{ file_etags | join(", ") }})}"
+ value       = [{{ file_etags | join(", ") }}]
 }
 
 output "hash_keys" {
   description = "List of hash keys created in the S3 bucket"
-  value       = "${list({{ hash_keys | join(", ") }})}"
+  value       = [{{ hash_keys | join(", ") }}]
 }
 
 output "hash_etags" {
   description = "List of hash ETags generated for each object in the bucket"
-  value       = "${list({{ hash_etags | join(", ") }})}"
+  value       = [{{ hash_etags | join(", ") }}]
 }
