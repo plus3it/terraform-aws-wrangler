@@ -1,38 +1,9 @@
-{%- from 'main.jinja' import source_s3_uris with context %}
-
-{%- set file_keys = [] %}
-{%- set file_etags = [] %}
-{%- set hash_keys = [] %}
-{%- set hash_etags = [] %}
-
-{%- for uri in uri_map.keys() -%}
-    {%- do file_keys.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".key") %}
-    {%- do file_etags.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".etag") %}
-    {%- do hash_keys.append("aws_s3_bucket_object.hash_" ~ uri | sha256 ~ ".key") %}
-    {%- do hash_etags.append("aws_s3_bucket_object.hash_" ~ uri | sha256 ~ ".etag") %}
-{%- endfor -%}
-
-{% for uri in source_s3_uris %}
-    {%- do file_keys.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".key") %}
-    {%- do file_etags.append("aws_s3_bucket_object.file_" ~ uri | sha256 ~ ".etag") %}
-{%- endfor -%}
-
-output "file_keys" {
-  description = "List of file keys created in the S3 bucket"
-  value       = [{{ file_keys | join(", ") }}]
+output "files" {
+  description = "Map of file keys => etags"
+  value = { for object in aws_s3_bucket_object.file : object.id => object.etag }
 }
 
-output "file_etags" {
- description = "List of file ETags generated for each object in the bucket"
- value       = [{{ file_etags | join(", ") }}]
-}
-
-output "hash_keys" {
-  description = "List of hash keys created in the S3 bucket"
-  value       = [{{ hash_keys | join(", ") }}]
-}
-
-output "hash_etags" {
-  description = "List of hash ETags generated for each object in the bucket"
-  value       = [{{ hash_etags | join(", ") }}]
+output "hashes" {
+  description = "Map of hash keys => etags"
+  value = { for object in aws_s3_bucket_object.hash : object.id => object.etag }
 }
