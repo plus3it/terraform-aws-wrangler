@@ -41,9 +41,9 @@ data "aws_s3_bucket_objects" "this" {
   bucket = aws_s3_bucket.source.id
 
   depends_on = [
-      aws_s3_bucket_object.this,
-      aws_s3_bucket_object.foo,
-      aws_s3_bucket_object.foobar,
+    aws_s3_bucket_object.this,
+    aws_s3_bucket_object.foo,
+    aws_s3_bucket_object.foobar,
   ]
 }
 

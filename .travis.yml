@@ -1,55 +1,41 @@
-language: bash
+dist: xenial
 
-env:
-  global:
-    - AWS_DEFAULT_REGION="us-east-1"
-    - REPO="${TRAVIS_REPO_SLUG#*/}"
-    - OWNER=plus3it
-    - DEPLOY_SLUG=$OWNER/$REPO
+language: node_js
+
+node_js:
+  - "10"
+
+stages:
+  - lint
+  - deploy
 
 jobs:
   include:
-    - stage: test
-      env:
-        - JOB="Terraform Format Verification"
-      before_script:
-        - TERRAFORM_VERSION=$(curl -sSL https://checkpoint-api.hashicorp.com/v1/check/terraform | jq -r -M '.current_version')
-        - TERRAFORM_URL="https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
-        - echo "TERRAFORM_URL=${TERRAFORM_URL}"
-        - curl -sSL -o terraform.zip "$TERRAFORM_URL"
-        - unzip terraform.zip && rm -f terraform.zip && chmod +x terraform
-        - mkdir -p ${HOME}/bin && export PATH=${HOME}/bin:${PATH} && mv terraform ${HOME}/bin/
-        - terraform -v
-      script:
-        - make tf.lint
-    - stage: test
-      env:
-        - JOB="JSON Lint/Format"
-      install:
-        - jq --version
-      script:
-        - make json.lint
+    - stage: lint
+      name: Project Syntax Verification
+      script: make && make docker/run target=lint
     - stage: deploy
-      env:
-        - JOB="Deploy to GitHub Releases"
-        - PRIOR_VERSION=$(git describe --abbrev=0 --tags)
-        - RELEASE_VERSION=$(grep '^current_version' $TRAVIS_BUILD_DIR/.bumpversion.cfg | sed 's/^.*= //')
-        - RELEASE_BODY="* [$REPO v$RELEASE_VERSION changes](https://github.com/$OWNER/$REPO/compare/$PRIOR_VERSION...$RELEASE_VERSION)"
+      if: branch = master AND type = push AND repo = plus3it/terraform-aws-wrangler
       before_script:
-        - echo PRIOR_VERSION=$PRIOR_VERSION
-        - echo RELEASE_VERSION=$RELEASE_VERSION
-        - echo RELEASE_BODY=$RELEASE_BODY
-      script:
-        - skip
+        - |
+          PRIOR_VERSION=$(git describe --abbrev=0 --tags)
+          RELEASE_VERSION=$(grep current_version $TRAVIS_BUILD_DIR/.bumpversion.cfg | sed 's/^.*= //' )
+          RELEASE_BODY="* [TERRAFORM-AWS-WRANGLER v$RELEASE_VERSION CHANGELOG](https://github.com/plus3it/terraform-aws-wrangler/blob/$RELEASE_VERSION/CHANGELOG.md)"
+          export PRIOR_VERSION RELEASE_VERSION RELEASE_BODY
+      script: skip
+      before_deploy:
+        - |
+          (set -x; git tag -a $RELEASE_VERSION -m $RELEASE_VERSION)
       deploy:
         provider: releases
-        name: $RELEASE_VERSION
-        tag_name: $RELEASE_VERSION
-        body: $RELEASE_BODY
-        draft: false
         api_key:
           secure: ZCv557ZNYu3qAZR6VhQvHaiB988CyHeN7AQIfiMW3xsJ9YxAKUXq6OTLSernJQIL5fd0n42mUDQW3sXNR6L6Af3RpmQKImwtDvyZSM29dgyCzMUfbo1C0qogkHL+IGCH/0fbR2PbWMjRb/I/qLnNOTGQC9c0NnJCdAFxkpKoxVhXHSVhNWZwW6tJFJZB0SCMQDJyT/v6qlJKyo4exTmwFWQ2Anj6/AUSms+YpNdqZBnA6PM+wiWysyty+n+CkcqCmUeLEm83vytvzZkny7n672FYmoOitM4OQUWmPVf2cBd/1xRKoYDDkaA6HEepmWSuDP3T1KjBbr7UP+C4K3yRHaAdyOxpuUV463KRhvNQKFe1drXhOrdZWcJfw8zuO7XPmyN2g4bNcCnCqBvWiKD/L7v0bNPk7D9Bh6RmJrVxAi+Q7LKcNS3l2gPkyLAvqxf6KxnQ4xuK8zhhseuy+Yx13gEtJhKD/OkDU1yI3mZRaDZ6KFqDtIkZm3EOUIGOvmz+MV8BJV3TlE1tPS+I41xo2Z95SOc66yZuaN+zwnmgbLCYnn9SDIIgcwG79rnOKOuJgaR9jOWrs4IlV+1B34Ssw3pLooerj+LpspJkAZyuAaTXXA5s43SJ2uZ7CdjcrE3x4T/Aby/rbZGlc95roSGcb9xpP4XkFhPBSNMefPV18Rw=
+        name: $RELEASE_VERSION
+        body: $RELEASE_BODY
+        tag_name: $RELEASE_VERSION
+        target_commitish: $TRAVIS_COMMIT
+        draft: false
         on:
           branch: master
-          repo: $DEPLOY_SLUG
+          repo: plus3it/terraform-aws-wrangler
           condition: '"$PRIOR_VERSION" != "$RELEASE_VERSION"'
