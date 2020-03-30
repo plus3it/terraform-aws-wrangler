@@ -3,53 +3,17 @@
 # terraform-aws-wrangler
 
 Terraform module to collect files from various sources and manage them in an S3
-bucket.
-
-## Usage
-
-This module requires that several terraform *.tf files be rendered prior to
-usage. This is a result of terraform resources being tracked by their `count`
-index. When the order of the `count` input changes, so does the index value in
-the terraform state. This leads to terraform wanting to destroy and re-create
-every resource. Follow [Terraform Issue 17179][terraform-issue-17179] for more
-information on the problem (see linked issues) and the proposed fix.
-
-In the meantime, to workaround this problem, we render the necessary .tf files
-using Jinja2. This creates distinct resources for every item in the inputs,
-rather than relying on `count` to create multiple resources.
-
-Before rendering the .tf files, first install the requirements:
-
-```
-pip install requirements.txt
-```
-
-Then render the files:
-
-```
-python render.py -var-file <var-file1> -var <var1="val1"> ... -var-file <var-fileN>
-```
-
-Once rendered, run terraform as usual, passing the same vars/var-file(s):
-
-```
-terraform init
-terraform apply -var-file <var-file1> -var <var1="val1"> ... -var-file <var-fileN>
-```
-
-We recommend using Terragrunt and [Terragrunt hooks][terragrunt-hooks], in
-particular, to automate these steps.
-
-
-[terraform-issue-17179]: https://github.com/hashicorp/terraform/issues/17179
+bucket. In order to support arbitrary file-types, this module uses [`terraform-external-file-cache`](https://registry.terraform.io/modules/plus3it/file-cache/external)
+to create a local cache of the files. The files are then managed in the S3
+bucket using the terraform resource `aws_s3_bucket_object`. A sha512 hash of
+every file is also published to the bucket.
 
 ## Use Cases
 
-This module supports a few use cases, managed by specifying different
-variables.
+This module supports a couple use cases:
 
-1.  Retrieves files from source URIs and stores them in an S3 bucket.
-2.  Copies files from one S3 bucket to another.
+1.  Retrieve files from source URIs and store them in an S3 bucket.
+2.  Copy files from one S3 bucket to another.
 
 ### Retrieve files and store them in an S3 bucket
 
@@ -78,39 +42,11 @@ These variables are used to retrieve files and store them in an S3 bucket:
 
 ### Copy files from one bucket to another
 
-Copying files from one bucket to another uses the following variables:
+This is accomplished by getting a list of the s3 objects in the source bucket,
+and constructing the `uri_map`. This list can be provided using the data source
+`aws_s3_bucket_objects`, but when doing so it is recommended to generate that
+list in a separate state and output the value. This is because the output of a
+data source or resource **cannot** be used in the `for_each` statement of a
+resource (without encountering chicken/egg problems).
 
--   `s3_objects_map` - A map of S3 bucket names to a list of key
-    prefixes in that bucket. The objects are filtered by the prefixes... All
-    objects matching the prefixes will be copied to the destination bucket. To
-    copy _all_ objects, specify an empty list (meaning, no prefix filtering).
-    -   Example 1 - Copy all objects from a bucket, `foo`:
-
-        ```hcl
-        s3_objects_map = {
-          "foo" = []
-        }
-        ```
-
-    -   Example 2 - Copy objects matching the prefixes, `bar/` and `baz/`:
-
-        ```hcl
-        s3_objects_map = {
-          "foo" = [
-            "bar/",
-            "baz/",
-          ]
-        }
-        ```
-
-    -   Example 3 - Copy objects from multiple buckets, `foo` and `bar`:
-
-        ```hcl
-        copy_bucket_objects_map = {
-          "foo" = []
-          "bar" = []
-        }
-        ```
-
--   `bucket_name` - Destination bucket where files will be copied to.
--   `prefix` - S3 path prepended to all files copied to the destination bucket.
+See the [`s3_sync` test](tests/s3_sync) for an example.

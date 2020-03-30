@@ -5,10 +5,6 @@ terraform.tfstate.backup
 terraform.tfstate.d/
 .terragrunt-cache
 
-# Rendered user files
-main.tf
-outputs.tf
-
 # User state
 .filecache
 .env

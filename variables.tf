@@ -17,12 +17,6 @@ variable "prefix" {
 
 variable "python_cmd" {
   type        = list
-  description = "Command to use when executing python external resources"
+  description = "Command to use with the filecache module when executing python external resources"
   default     = ["python"]
-}
-
-variable "s3_objects_map" {
-  type        = map(list(string))
-  description = "Map of bucket names to a list of prefixes -- objects in each bucket matching each prefix will be retrieved and copied to \"bucket_name\""
-  default     = {}
 }
