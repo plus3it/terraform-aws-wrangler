@@ -3,73 +3,17 @@
 # terraform-aws-wrangler
 
 Terraform module to collect files from various sources and manage them in an S3
-bucket.
-
-## Usage
-
-This module requires that several terraform *.tf files be rendered prior to
-usage. This is a result of terraform resources being tracked by their `count`
-index. When the order of the `count` input changes, so does the index value in
-the terraform state. This leads to terraform wanting to destroy and re-create
-every resource. Follow [Terraform Issue 17179][terraform-issue-17179] for more
-information on the problem (see linked issues) and the proposed fix.
-
-In the meantime, to workaround this problem, we render the necessary .tf files
-using Jinja2. This creates distinct resources for every item in the inputs,
-rather than relying on `count` to create multiple resources.
-
-Before rendering the .tf files, first install the requirements:
-
-```
-pip install requirements.txt
-```
-
-Then render the files:
-
-```
-python render.py -var-file <var-file1> -var <var1="val1"> ... -var-file <var-fileN>
-```
-
-Once rendered, run terraform as usual, passing the same vars/var-file(s):
-
-```
-terraform init
-terraform apply -var-file <var-file1> -var <var1="val1"> ... -var-file <var-fileN>
-```
-
-We recommend using Terragrunt and [Terragrunt hooks][terragrunt-hooks], in
-particular, to automate these steps.
-
-
-[terraform-issue-17179]: https://github.com/hashicorp/terraform/issues/17179
+bucket. In order to support arbitrary file-types, this module uses [`terraform-external-file-cache`](https://registry.terraform.io/modules/plus3it/file-cache/external)
+to create a local cache of the files. The files are then managed in the S3
+bucket using the terraform resource `aws_s3_bucket_object`. A sha512 hash of
+every file is also published to the bucket.
 
 ## Use Cases
 
-This module supports a few use cases, managed by specifying different
-variables.
+This module supports a couple use cases:
 
-1.  Creates an S3 bucket and applies a bucket policy.
-2.  Retrieves files from source URIs and stores them in an S3 bucket.
-3.  Creates a Salt yum mirror in an S3 bucket (salt-reposync).
-4.  Copies files from one S3 bucket to another.
-
-### Create an S3 bucket
-
-To create an S3 bucket, use the variables:
-
--   `bucket_name` - Name of the S3 bucket.
--   `bucket_policy` - Filepath to the JSON bucket policy. This file is
-    templated using the Terraform [template provider][template-provider].
-    Variables passed through the templater include:
-    -   `bucket_name`
-    -   `prefix`
--   `create_bucket` - Set to `"true"` to create the bucket.
-
-When using this module for other use cases, if `create_bucket` is `"false"`,
-then the bucket specified by `bucket_name` must already exist. You _can_ also
-combine use cases, creating the bucket in the same terraform configuration.
-
-[template-provider]: https://www.terraform.io/docs/providers/template/d/file.html
+1.  Retrieve files from source URIs and store them in an S3 bucket.
+2.  Copy files from one S3 bucket to another.
 
 ### Retrieve files and store them in an S3 bucket
 
@@ -96,66 +40,38 @@ These variables are used to retrieve files and store them in an S3 bucket:
 -   `prefix` - S3 prefix prepended to all S3 key paths when the files are put
     in the bucket.
 
-### Create yum repo mirror for a specific Salt version
-
-To create a yum mirror for Salt, use these variables:
-
--   `salt_version` - Version of salt to mirror. If empty (the default), then no
-    Salt yum repo mirror will be created.
--   `salt_repo_prefix` - S3 path prepended to all files in the Salt yum repo
-    mirror.
--   `bucket_name` - S3 bucket where the salt yum mirror will be created.
-
-This feature uses the [`salt-reposync`][salt-reposync] module, which launches
-an EC2 instance that mirrors the repo via rsync. The EC2 resources created by
-the `salt-reposync` module will remain behind (incurring charges) unless you
-destroy them. To destroy them, run:
-
--   `terraform destroy -target module.salt_reposync`
-
-It is safe to destroy the module...the mirrored yum repo will remain. It is
-also safe to re-create the mirror by specifying a salt version that has already
-been mirrored to the same bucket/prefix. If you use terragrunt, you _may_ want
-to use its "after" [hook][terragrunt-hooks] to automate the destroy action.
-
-[salt-reposync]: https://github.com/plus3it/salt-reposync
-[terragrunt-hooks]: https://github.com/gruntwork-io/terragrunt#before-and-after-hooks
-
 ### Copy files from one bucket to another
 
-Copying files from one bucket to another uses the following variables:
+This is accomplished by getting a list of the s3 objects in the source bucket,
+and constructing the `uri_map`. This list can be provided using the data source
+`aws_s3_bucket_objects`, but when doing so it is recommended to generate that
+list in a separate state and output the value. This is because the output of a
+data source or resource **cannot** be used in the `for_each` statement of a
+resource (without encountering chicken/egg problems).
 
--   `s3_objects_map` - A map of S3 bucket names to a list of key
-    prefixes in that bucket. The objects are filtered by the prefixes... All
-    objects matching the prefixes will be copied to the destination bucket. To
-    copy _all_ objects, specify an empty list (meaning, no prefix filtering).
-    -   Example 1 - Copy all objects from a bucket, `foo`:
+See the [`s3_sync` test](tests/s3_sync) for an example.
 
-        ```hcl
-        s3_objects_map = {
-          "foo" = []
-        }
-        ```
+<!-- BEGIN TFDOCS -->
+## Providers
 
-    -   Example 2 - Copy objects matching the prefixes, `bar/` and `baz/`:
+| Name | Version |
+|------|---------|
+| aws | n/a |
 
-        ```hcl
-        s3_objects_map = {
-          "foo" = [
-            "bar/",
-            "baz/",
-          ]
-        }
-        ```
+## Inputs
 
-    -   Example 3 - Copy objects from multiple buckets, `foo` and `bar`:
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| bucket\_name | Name of the S3 bucket where file artifacts are to be stored | `string` | n/a | yes |
+| prefix | S3 key prefix to prepend to each object | `string` | `""` | no |
+| python\_cmd | Command to use with the filecache module when executing python external resources | `list` | <pre>[<br>  "python"<br>]</pre> | no |
+| uri\_map | Map of URIs to retrieve and the S3 key path at which to store the file | `map(string)` | `{}` | no |
 
-        ```hcl
-        copy_bucket_objects_map = {
-          "foo" = []
-          "bar" = []
-        }
-        ```
+## Outputs
 
--   `bucket_name` - Destination bucket where files will be copied to.
--   `prefix` - S3 path prepended to all files copied to the destination bucket.
+| Name | Description |
+|------|-------------|
+| files | Map of file keys => etags |
+| hashes | Map of hash keys => etags |
+
+<!-- END TFDOCS -->
