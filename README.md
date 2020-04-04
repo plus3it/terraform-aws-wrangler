@@ -52,6 +52,10 @@ resource (without encountering chicken/egg problems).
 See the [`s3_sync` test](tests/s3_sync) for an example.
 
 <!-- BEGIN TFDOCS -->
+## Requirements
+
+No requirements.
+
 ## Providers
 
 | Name | Version |
@@ -61,7 +65,7 @@ See the [`s3_sync` test](tests/s3_sync) for an example.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:-----:|
+|------|-------------|------|---------|:--------:|
 | bucket\_name | Name of the S3 bucket where file artifacts are to be stored | `string` | n/a | yes |
 | prefix | S3 key prefix to prepend to each object | `string` | `""` | no |
 | python\_cmd | Command to use with the filecache module when executing python external resources | `list` | <pre>[<br>  "python"<br>]</pre> | no |
