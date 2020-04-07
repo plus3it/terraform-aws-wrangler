@@ -6,22 +6,24 @@ module "file_cache" {
 }
 
 resource "aws_s3_bucket_object" "file" {
-  for_each = var.uri_map
+  # Construct a resource id that represents the bucket and key
+  for_each = { for uri, key in var.uri_map : "s3://${var.bucket_name}/${var.prefix}${key}${basename(uri)}" => uri }
 
   bucket = var.bucket_name
-  key    = local.uri_objects[each.key].key
-  source = module.file_cache.filepaths[each.key]
-  etag   = filemd5(module.file_cache.filepaths[each.key])
+  key    = local.uri_objects[each.value].key
+  source = module.file_cache.filepaths[each.value]
+  etag   = filemd5(module.file_cache.filepaths[each.value])
 }
 
 resource "aws_s3_bucket_object" "hash" {
-  for_each = var.uri_map
+  # Construct a resource id that represents the bucket and key
+  for_each = { for uri, key in var.uri_map : "s3://${var.bucket_name}/${var.prefix}${key}${basename(uri)}.SHA512" => uri }
 
   bucket       = var.bucket_name
-  key          = "${local.uri_objects[each.key].key}.SHA512"
-  content      = local.uri_objects[each.key].hash_content
+  key          = "${local.uri_objects[each.value].key}.SHA512"
+  content      = local.uri_objects[each.value].hash_content
   content_type = "application/octet-stream"
-  etag         = md5(local.uri_objects[each.key].hash_content)
+  etag         = md5(local.uri_objects[each.value].hash_content)
 }
 
 locals {

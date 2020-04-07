@@ -2,14 +2,17 @@ terraform {
   required_version = ">= 0.12"
 }
 
-resource "aws_s3_bucket" "this" {
-  bucket_prefix = "terraform-aws-wrangler-"
+data "terraform_remote_state" "prereq" {
+  backend = "local"
+  config = {
+    path = "prereq/terraform.tfstate"
+  }
 }
 
 module "uri_map" {
   source = "../../"
 
-  bucket_name = aws_s3_bucket.this.id
+  bucket_name = data.terraform_remote_state.prereq.outputs.bucket.id
   prefix      = local.prefix
   uri_map     = local.uri_map
 }
