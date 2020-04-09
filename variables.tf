@@ -3,6 +3,12 @@ variable "bucket_name" {
   description = "Name of the S3 bucket where file artifacts are to be stored"
 }
 
+variable "create_hashes" {
+  type        = bool
+  description = "Create and host sha512 hashes of each file in the `uri_map`"
+  default     = true
+}
+
 variable "uri_map" {
   type        = map(string)
   description = "Map of URIs to retrieve and the S3 key path at which to store the file"
