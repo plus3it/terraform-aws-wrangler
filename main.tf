@@ -17,7 +17,7 @@ resource "aws_s3_bucket_object" "file" {
 
 resource "aws_s3_bucket_object" "hash" {
   # Construct a resource id that represents the bucket and key
-  for_each = { for uri, key in var.uri_map : "s3://${var.bucket_name}/${var.prefix}${key}${basename(uri)}.SHA512" => uri }
+  for_each = var.create_hashes ? { for uri, key in var.uri_map : "s3://${var.bucket_name}/${var.prefix}${key}${basename(uri)}.SHA512" => uri } : {}
 
   bucket       = var.bucket_name
   key          = "${local.uri_objects[each.value].key}.SHA512"
