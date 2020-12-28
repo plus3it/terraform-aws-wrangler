@@ -22,7 +22,7 @@ variable "prefix" {
 }
 
 variable "python_cmd" {
-  type        = list
+  type        = list(any)
   description = "Command to use with the filecache module when executing python external resources"
   default     = ["python"]
 }
