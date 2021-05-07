@@ -60,23 +60,28 @@ No requirements.
 
 | Name | Version |
 |------|---------|
-| aws | n/a |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+
+## Resources
+
+| Name | Type |
+|------|------|
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bucket\_name | Name of the S3 bucket where file artifacts are to be stored | `string` | n/a | yes |
-| create\_hashes | Create and host sha512 hashes of each file in the `uri_map` | `bool` | `true` | no |
-| prefix | S3 key prefix to prepend to each object | `string` | `""` | no |
-| python\_cmd | Command to use with the filecache module when executing python external resources | `list(any)` | <pre>[<br>  "python"<br>]</pre> | no |
-| uri\_map | Map of URIs to retrieve and the S3 key path at which to store the file | `map(string)` | `{}` | no |
+| <a name="input_bucket_name"></a> [bucket\_name](#input\_bucket\_name) | Name of the S3 bucket where file artifacts are to be stored | `string` | n/a | yes |
+| <a name="input_create_hashes"></a> [create\_hashes](#input\_create\_hashes) | Create and host sha512 hashes of each file in the `uri_map` | `bool` | `true` | no |
+| <a name="input_prefix"></a> [prefix](#input\_prefix) | S3 key prefix to prepend to each object | `string` | `""` | no |
+| <a name="input_python_cmd"></a> [python\_cmd](#input\_python\_cmd) | Command to use with the filecache module when executing python external resources | `list(any)` | <pre>[<br>  "python"<br>]</pre> | no |
+| <a name="input_uri_map"></a> [uri\_map](#input\_uri\_map) | Map of URIs to retrieve and the S3 key path at which to store the file | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| files | Map of file keys => etags |
-| hashes | Map of hash keys => etags |
+| <a name="output_files"></a> [files](#output\_files) | Map of file keys => etags |
+| <a name="output_hashes"></a> [hashes](#output\_hashes) | Map of hash keys => etags |
 
 <!-- END TFDOCS -->
