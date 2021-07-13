@@ -1,7 +1,3 @@
-provider "aws" {
-  region = "us-east-1"
-}
-
 resource "random_uuid" "this" {
   count = local.object_count
 }
