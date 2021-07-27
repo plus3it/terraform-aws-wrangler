@@ -26,3 +26,9 @@ variable "python_cmd" {
   description = "Command to use with the filecache module when executing python external resources"
   default     = ["python"]
 }
+
+variable "s3_endpoint_url" {
+  type        = string
+  description = "S3 API endpoint for non-AWS hosts; format: https://hostname:port"
+  default     = null
+}

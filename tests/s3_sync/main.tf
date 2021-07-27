@@ -1,7 +1,3 @@
-terraform {
-  required_version = ">= 0.12"
-}
-
 data "terraform_remote_state" "prereq" {
   backend = "local"
   config = {
@@ -23,8 +19,16 @@ module "s3_sync" {
       element(split("/", object), length(split("/", object)) - 1)
     )
   }
+
+  s3_endpoint_url = var.s3_endpoint_url
 }
 
 output "s3_sync" {
   value = module.s3_sync
+}
+
+variable "s3_endpoint_url" {
+  type        = string
+  description = "S3 API endpoint for non-AWS hosts; format: https://hostname:port"
+  default     = null
 }
