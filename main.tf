@@ -1,8 +1,10 @@
 module "file_cache" {
-  source = "git::https://github.com/plus3it/terraform-external-file-cache.git?ref=2.0.3"
+  source = "git::https://github.com/plus3it/terraform-external-file-cache.git?ref=2.1.0"
 
   python_cmd = var.python_cmd
   uris       = keys(var.uri_map)
+
+  s3_endpoint_url = var.s3_endpoint_url
 }
 
 resource "aws_s3_bucket_object" "file" {
