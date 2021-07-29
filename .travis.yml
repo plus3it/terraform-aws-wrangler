@@ -29,7 +29,7 @@ jobs:
         - make mockstack/up
         - id -u
         - id -g
-      script: make mockstack/pytest
+      script: make mockstack/dummy
       after_script:
         - make mockstack/clean
     - stage: deploy
