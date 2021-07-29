@@ -12,7 +12,7 @@ include $(shell test -f .tardigrade-ci || curl -sSL -o .tardigrade-ci "https://r
 
 mockstack/dummy:
 	@ echo "[$@] Running Terraform tests against LocalStack"
-	DOCKER_RUN_FLAGS="--network terraform_pytest_default --rm --user "$(id -u):$(id -g)" -e MOCKSTACK_HOST=$(MOCKSTACK) -e PYTEST_ARGS=\"$(PYTEST_ARGS)\"" \
+	DOCKER_RUN_FLAGS="--network terraform_pytest_default --rm --user "$$(id -u):$$(id -g)" -e MOCKSTACK_HOST=$(MOCKSTACK) -e PYTEST_ARGS=\"$(PYTEST_ARGS)\"" \
 		IMAGE_NAME=$(INTEGRATION_TEST_BASE_IMAGE_NAME):latest \
 		$(MAKE) docker/run target=terraform/pytest
 	@ echo "[$@]: Completed successfully!"
