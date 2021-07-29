@@ -27,6 +27,8 @@ jobs:
       install:
         - make docker-compose/install
         - make mockstack/up
+        - id -u
+        - id -g
       script: make mockstack/pytest
       after_script:
         - make mockstack/clean
