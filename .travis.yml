@@ -29,6 +29,29 @@ jobs:
         - make mockstack/up
         - id -u
         - id -g
+        - >-
+          docker build -t terraform-aws-wrangler-integration-test:latest
+          --build-arg PROJECT_NAME=tardigrade-ci
+          --build-arg USER_UID=$(id -u)
+          --build-arg USER_GID=$(id -g)
+          -f Dockerfile .
+        - >-
+          docker run --network terraform_pytest_default --rm --user $(id -u):$(id -g) -e MOCKSTACK_HOST=localstack -e PYTEST_ARGS=""
+          -v "/home/travis/build/plus3it/terraform-aws-wrangler/:/workdir/"
+          -v "/home/travis/build/plus3it/terraform-aws-wrangler/tardigrade-ci/:/tardigrade-ci/"
+          -v "/home/travis/.aws/:/home/tardigrade-ci/.aws/:ro"
+          -e AWS_DEFAULT_REGION=us-east-1
+          -e GITHUB_ACCESS_TOKEN=$GITHUB_ACCESS_TOKEN
+          -w /workdir/
+          --entrypoint bash
+          --name dummy
+          -dit
+          terraform-aws-wrangler-integration-test:latest
+        - docker exec dummy whoami
+        - docker exec dummy ls -al
+        - docker exec dummy ls -al $HOME
+        - docker exec dummy ls -al /tardigrade-ci
+        - docker exec dummy ls -al /workdir/tardigrade-ci
       script: make mockstack/dummy
       after_script:
         - make mockstack/clean
