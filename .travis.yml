@@ -36,7 +36,7 @@ jobs:
           --build-arg USER_GID=$(id -g)
           -f Dockerfile .
         - >-
-          docker run --network terraform_pytest_default --rm --user $(id -u):$(id -g) -e MOCKSTACK_HOST=localstack -e PYTEST_ARGS=""
+          docker run --network terraform_pytest_default -e MOCKSTACK_HOST=localstack -e PYTEST_ARGS=""
           -v "/home/travis/build/plus3it/terraform-aws-wrangler/:/workdir/"
           -v "/home/travis/build/plus3it/terraform-aws-wrangler/tardigrade-ci/:/tardigrade-ci/"
           -v "/home/travis/.aws/:/home/tardigrade-ci/.aws/:ro"
