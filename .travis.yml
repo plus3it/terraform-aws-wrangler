@@ -49,7 +49,7 @@ jobs:
           terraform-aws-wrangler-integration-test:latest
         - docker exec dummy whoami
         - docker exec dummy ls -al
-        - docker exec dummy ls -al "$HOME"
+        - docker exec dummy bash -c 'ls -al $HOME'
         - docker exec dummy ls -al /tardigrade-ci
         - docker exec dummy ls -al /workdir/tardigrade-ci
       script: make mockstack/dummy
