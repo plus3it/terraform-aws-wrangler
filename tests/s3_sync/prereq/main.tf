@@ -10,7 +10,7 @@ resource "aws_s3_bucket" "target" {
   bucket_prefix = "terraform-aws-wrangler-"
 }
 
-resource "aws_s3_bucket_object" "this" {
+resource "aws_s3_object" "this" {
   count = local.object_count
 
   bucket  = aws_s3_bucket.source.id
@@ -18,14 +18,14 @@ resource "aws_s3_bucket_object" "this" {
   content = random_uuid.this[count.index].result
 }
 
-resource "aws_s3_bucket_object" "foo" {
+resource "aws_s3_object" "foo" {
   count = local.object_count
 
   bucket  = aws_s3_bucket.source.id
   key     = "foo/${random_uuid.this[count.index].result}"
   content = random_uuid.this[count.index].result
 }
-resource "aws_s3_bucket_object" "foobar" {
+resource "aws_s3_object" "foobar" {
   count = local.object_count
 
   bucket  = aws_s3_bucket.source.id
@@ -33,13 +33,13 @@ resource "aws_s3_bucket_object" "foobar" {
   content = random_uuid.this[count.index].result
 }
 
-data "aws_s3_bucket_objects" "this" {
+data "aws_s3_objects" "this" {
   bucket = aws_s3_bucket.source.id
 
   depends_on = [
-    aws_s3_bucket_object.this,
-    aws_s3_bucket_object.foo,
-    aws_s3_bucket_object.foobar,
+    aws_s3_object.this,
+    aws_s3_object.foo,
+    aws_s3_object.foobar,
   ]
 }
 
@@ -52,7 +52,7 @@ output "bucket_target" {
 }
 
 output "s3_objects" {
-  value = data.aws_s3_bucket_objects.this
+  value = data.aws_s3_objects.this
 }
 
 locals {
