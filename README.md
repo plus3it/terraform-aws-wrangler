@@ -5,7 +5,7 @@
 Terraform module to collect files from various sources and manage them in an S3
 bucket. In order to support arbitrary file-types, this module uses [`terraform-external-file-cache`](https://registry.terraform.io/modules/plus3it/file-cache/external)
 to create a local cache of the files. The files are then managed in the S3
-bucket using the terraform resource `aws_s3_bucket_object`. A sha512 hash of
+bucket using the terraform resource `aws_s3_object`. A sha512 hash of
 every file is also published to the bucket.
 
 ## Use Cases
@@ -44,7 +44,7 @@ These variables are used to retrieve files and store them in an S3 bucket:
 
 This is accomplished by getting a list of the s3 objects in the source bucket,
 and constructing the `uri_map`. This list can be provided using the data source
-`aws_s3_bucket_objects`, but when doing so it is recommended to generate that
+`aws_s3_objects`, but when doing so it is recommended to generate that
 list in a separate state and output the value. This is because the output of a
 data source or resource **cannot** be used in the `for_each` statement of a
 resource (without encountering chicken/egg problems).
