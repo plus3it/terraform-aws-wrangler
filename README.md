@@ -103,7 +103,7 @@ make mockstack/clean
 
 | Name | Description |
 |------|-------------|
-| <a name="output_files"></a> [files](#output\_files) | Map of file keys => etags |
-| <a name="output_hashes"></a> [hashes](#output\_hashes) | Map of hash keys => etags |
+| <a name="output_files"></a> [files](#output\_files) | Map of file keys => source\_hash |
+| <a name="output_hashes"></a> [hashes](#output\_hashes) | Map of hash keys => source\_hash |
 
 <!-- END TFDOCS -->
