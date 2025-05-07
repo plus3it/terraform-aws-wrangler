@@ -27,12 +27,10 @@ These variables are used to retrieve files and store them in an S3 bucket:
     ```hcl
     uri_map = {
       # salt for windows
-      "http://repo.saltstack.com/windows/Salt-Minion-2016.11.6-AMD64-Setup.exe" = "saltstack/salt/windows/"
+      "https://packages.broadcom.com/artifactory/saltproject-generic/windows/3006.10/Salt-Minion-3006.10-Py3-AMD64-Setup.exe" = "saltstack/salt/windows/"
 
-      # pbis open
-      "https://repo.pbis.beyondtrust.com/yum/pbiso/x86_64/Packages/pbis-open-8.6.0-427.x86_64.rpm"         = "beyond-trust/pbis-open/"
-      "https://repo.pbis.beyondtrust.com/yum/pbiso/x86_64/Packages/pbis-open-upgrade-8.6.0-427.x86_64.rpm" = "beyond-trust/pbis-open/"
-      "https://repo.pbis.beyondtrust.com/yum/pbiso/x86_64/Packages/pbis-open-legacy-8.6.0-427.x86_64.rpm"  = "beyond-trust/pbis-open/"
+      # python for windows
+      "https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe" = "python/python/"
     }
     ```
 
@@ -95,7 +93,7 @@ make mockstack/clean
 | <a name="input_bucket_name"></a> [bucket\_name](#input\_bucket\_name) | Name of the S3 bucket where file artifacts are to be stored | `string` | n/a | yes |
 | <a name="input_create_hashes"></a> [create\_hashes](#input\_create\_hashes) | Create and host sha512 hashes of each file in the `uri_map` | `bool` | `true` | no |
 | <a name="input_prefix"></a> [prefix](#input\_prefix) | S3 key prefix to prepend to each object | `string` | `""` | no |
-| <a name="input_python_cmd"></a> [python\_cmd](#input\_python\_cmd) | Command to use with the filecache module when executing python external resources | `list(any)` | <pre>[<br>  "python"<br>]</pre> | no |
+| <a name="input_python_cmd"></a> [python\_cmd](#input\_python\_cmd) | Command to use with the filecache module when executing python external resources | `list(any)` | <pre>[<br/>  "python"<br/>]</pre> | no |
 | <a name="input_s3_endpoint_url"></a> [s3\_endpoint\_url](#input\_s3\_endpoint\_url) | S3 API endpoint for non-AWS hosts; format: https://hostname:port | `string` | `null` | no |
 | <a name="input_uri_map"></a> [uri\_map](#input\_uri\_map) | Map of URIs to retrieve and the S3 key path at which to store the file | `map(string)` | `{}` | no |
 
