@@ -32,7 +32,7 @@ locals {
     "https://bootstrap.pypa.io/pip/3.5/get-pip.py" = "python/pip/3.5/"
 
     # salt for windows
-    "http://repo.saltstack.com/windows/Salt-Minion-Latest-Py3-AMD64-Setup.exe" = "saltstack/salt/windows/"
+    "https://packages.broadcom.com/artifactory/saltproject-generic/windows/3006.10/Salt-Minion-3006.10-Py3-AMD64-Setup.exe" = "saltstack/salt/windows/"
   }
 
   prefix = "repo/"

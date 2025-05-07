@@ -27,12 +27,10 @@ These variables are used to retrieve files and store them in an S3 bucket:
     ```hcl
     uri_map = {
       # salt for windows
-      "http://repo.saltstack.com/windows/Salt-Minion-2016.11.6-AMD64-Setup.exe" = "saltstack/salt/windows/"
+      "https://packages.broadcom.com/artifactory/saltproject-generic/windows/3006.10/Salt-Minion-3006.10-Py3-AMD64-Setup.exe" = "saltstack/salt/windows/"
 
-      # pbis open
-      "https://repo.pbis.beyondtrust.com/yum/pbiso/x86_64/Packages/pbis-open-8.6.0-427.x86_64.rpm"         = "beyond-trust/pbis-open/"
-      "https://repo.pbis.beyondtrust.com/yum/pbiso/x86_64/Packages/pbis-open-upgrade-8.6.0-427.x86_64.rpm" = "beyond-trust/pbis-open/"
-      "https://repo.pbis.beyondtrust.com/yum/pbiso/x86_64/Packages/pbis-open-legacy-8.6.0-427.x86_64.rpm"  = "beyond-trust/pbis-open/"
+      # python for windows
+      "https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe" = "python/python/"
     }
     ```
 
